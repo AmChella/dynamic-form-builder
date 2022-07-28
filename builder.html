@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Form Builder</title>
+    <style>
+      .main .form-area {
+        width: 150px;
+        height: 150px;
+        border: 1px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dynamic-form-builder">
+      <div class="main">
+        <div class="menu">
+          <div class="item" id="dfb-text" draggable="true">Text Field</div>
+          <div class="item" id="dfb-select" draggable="true">Select</div>
+          <div class="item" id="dfb-radio" draggable="true">radio</div>
+          <div class="item" id="dfb-checkbox" draggable="true">checkbox</div>
+          <div class="item" id="dfb-textarea" draggable="true">textarea</div>
+        </div>
+        <div class="form-area"></div>
+      </div>
+    </div>
+  </body>
+  <script>
+    class DynamicFormBuilder {
+      constructor(nameOfBuilder, formFrame) {
+        this.name = nameOfBuilder;
+        this.formFrame = formFrame;
+      }
+      capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      }
+      onDragStart(ev) {
+        ev.dataTransfer.setData("name", ev.target.id);
+      }
+
+      onDrag(ev) {
+        ev.preventDefault();
+        let nameOfItem = ev.dataTransfer.getData("name");
+        let inputType = nameOfItem.split("-");
+        let method = this.capitalize(inputType[1]);
+        let methodName = `createElement${method}`;
+        console.log(methodName);
+        this[methodName]();
+      }
+
+      onDragAllow(ev) {
+        ev.preventDefault();
+      }
+
+      createElementText() {
+        let fragment = document.createDocumentFragment();
+        let textField = document.createElement("input");
+        textField.setAttribute("type", "text");
+        textField.setAttribute("placeholder", "enter your data");
+        fragment.appendChild(textField);
+        this.formFrame.appendChild(fragment);
+      }
+    }
+    window.onload = () => {
+      console.log("on loaded");
+      var dragMenu = document.querySelectorAll("div.menu div.item");
+      var dropArea = document.querySelector("div.main div.form-area");
+      var objDfb = new DynamicFormBuilder("ChellaForm", dropArea);
+      dragMenu.forEach((e) => {
+        e.addEventListener("dragstart", (e) => objDfb.onDragStart(e));
+      });
+      dropArea.addEventListener("drop", (e) => objDfb.onDrag(e));
+      dropArea.addEventListener("dragover", (e) => objDfb.onDragAllow(e));
+    };
+  </script>
+</html>
